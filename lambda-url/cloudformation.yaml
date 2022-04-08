@@ -19,15 +19,33 @@ Resources:
         ZipFile: |
           exports.handler = async (event) => {
             console.info(`Books lambda event: ${JSON.stringify(event)}`)
-            const response = {
-              body: JSON.stringify([
-                { id: 1, name: 'Monolith to Microservices', author: 'Sam Newman' },
-                { id: 2, name: 'Design It!', author: 'Michael Keeling' },
-                { id: 3, name: 'Programming Kotlin', author: 'Venkat Subramaniam' },
-              ]),
-              statusCode: 200
+            if  (event.rawPath === '/v1/books') {
+              switch (event.requestContext.http.method) {
+                case 'GET': 
+                  return  {
+                    body: JSON.stringify([
+                      { id: 1, name: 'Monolith to Microservices', author: 'Sam Newman' },
+                      { id: 2, name: 'Design It!', author: 'Michael Keeling' },
+                      { id: 3, name: 'Programming Kotlin', author: 'Venkat Subramaniam' },
+                    ]),
+                    statusCode: 200
+                  }
+                  break
+                case 'POST':
+                  return {
+                    body: event.body,
+                    statusCode: 201
+                  }
+                  break
+                default:
+                  return {
+                    statusCode: 404
+                  }
+              }
             }
-            return response
+            return {
+              statusCode: 404
+            }
           }
       Role: !GetAtt LambdaRole.Arn
       Timeout: 30
