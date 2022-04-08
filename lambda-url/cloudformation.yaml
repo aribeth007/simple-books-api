@@ -30,13 +30,11 @@ Resources:
                     ]),
                     statusCode: 200
                   }
-                  break
                 case 'POST':
                   return {
                     body: event.body,
                     statusCode: 201
                   }
-                  break
                 default:
                   return {
                     statusCode: 404
