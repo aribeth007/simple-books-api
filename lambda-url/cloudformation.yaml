@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Simple Books API with one lambda function and Lambda URL enabled
+
+Parameters:
+  BooksLambdaName:
+    Type: String
+    Default: books-lambda
+
+Resources:
+
+  BooksLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref BooksLambdaName
+      Handler: index.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            console.info(`Books lambda event: ${JSON.stringify(event)}`)
+            const response = {
+              body: JSON.stringify([
+                { id: 1, name: 'Monolith to Microservices', author: 'Sam Newman' },
+                { id: 2, name: 'Design It!', author: 'Michael Keeling' },
+                { id: 3, name: 'Programming Kotlin', author: 'Venkat Subramaniam' },
+              ]),
+              statusCode: 200
+            }
+            return response
+          }
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 30
+
+  BooksLambdaUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref BooksLambda
+      AuthType: AWS_IAM
+
+  BooksLambdaUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BooksLambda
+      Principal: '*'
+      Action: 'lambda:InvokeFunctionUrl'
+      FunctionUrlAuthType: AWS_IAM
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyName: LambdaPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - 'arn:aws:logs:*:*:*'
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
