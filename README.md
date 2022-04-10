@@ -23,4 +23,4 @@ Details and explanations: [here](https://learnwithalex.medium.com/aws-learning-s
 
 Code: [here](lambda-url)
 
-## Follow form more [here](https://learnwithalex.medium.com)
+## Follow for more [here](https://learnwithalex.medium.com)
