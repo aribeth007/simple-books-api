@@ -89,6 +89,14 @@ Resources:
       Name: Books-Gateway-V2
       Description: Books-Gateway-V2
       ProtocolType: HTTP
+      CorsConfiguration:
+        AllowCredentials: true
+        AllowHeaders:
+          - Authorization
+        AllowMethods:
+          - GET, POST, OPTIONS
+        AllowOrigins:
+          - *
 
   CreateBooksIntegration:
     Type: AWS::ApiGatewayV2::Integration
