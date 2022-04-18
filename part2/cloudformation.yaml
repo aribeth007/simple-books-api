@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Simple Books API Gateway and Lambda functions
+
+Parameters:
+  ApiName:
+    Type: String
+    Default: simple-books-api
+  RetrieveBooksLambdaName:
+    Type: String
+    Default: retrieve-books
+  CreateBooksLambdaName:
+    Type: String
+    Default: create-books
+
+Resources:
+
+  RetrieveBooksLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref RetrieveBooksLambdaName
+      Handler: index.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            console.info(`Retrieve books lambda event: ${JSON.stringify(event)}`)
+            const response = {
+              body: JSON.stringify([
+                { id: 1, name: 'Monolith to Microservices', author: 'Sam Newman' },
+                { id: 2, name: 'Design It!', author: 'Michael Keeling' },
+                { id: 3, name: 'Programming Kotlin', author: 'Venkat Subramaniam' },
+              ]),
+              statusCode: 200
+            }
+            return response
+          }
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 30
+
+  CreateBooksLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref CreateBooksLambdaName
+      Handler: index.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            console.info(`Lying about creating books lambda event: ${JSON.stringify(event)}`)
+            const response = {
+              body: JSON.stringify(event.body),
+              statusCode: 201
+            }
+            return response
+          }
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 30
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyName: LambdaPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - 'arn:aws:logs:*:*:*'
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  BooksAPI:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: Books-Gateway-V2
+      Description: Books-Gateway-V2
+      ProtocolType: HTTP
+
+  CreateBooksIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BooksAPI
+      Description: Create Books Lambda Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:create-books/invocations
+      IntegrationMethod: POST
+      PayloadFormatVersion: '2.0'
+
+  RetrieveBooksIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref BooksAPI
+      Description: Retrieve Books Lambda Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:retrieve-books/invocations
+      IntegrationMethod: POST
+      PayloadFormatVersion: '2.0'
+
+  CreateBooksRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - CreateBooksIntegration
+    Properties:
+      ApiId: !Ref BooksAPI
+      RouteKey: 'POST /books'
+      AuthorizationType: AWS_IAM
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref CreateBooksIntegration
+
+  RetrieveBooksRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - RetrieveBooksIntegration
+    Properties:
+      ApiId: !Ref BooksAPI
+      RouteKey: 'GET /books'
+      AuthorizationType: AWS_IAM
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref RetrieveBooksIntegration
+
+  BooksAPIDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - RetrieveBooksRoute
+      - CreateBooksRoute
+    Properties:
+      ApiId: !Ref BooksAPI
+
+  V1Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    DependsOn:
+      - BooksAPI
+      - BooksAPIDeployment
+    Properties:
+      StageName: v1
+      AutoDeploy: true
+      Description: v1 Stage
+      DeploymentId: !Ref BooksAPIDeployment
+      ApiId: !Ref BooksAPI
+
+  ApiGatewayInvokePermissionForRetrieveBooks:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt RetrieveBooksLambda.Arn
+      Principal: apigateway.amazonaws.com
+
+  ApiGatewayInvokePermissionForCreateBooks:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CreateBooksLambda.Arn
+      Principal: apigateway.amazonaws.com
