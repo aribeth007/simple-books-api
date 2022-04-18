@@ -96,7 +96,7 @@ Resources:
         AllowMethods:
           - GET, POST, OPTIONS
         AllowOrigins:
-          - *
+          - '*'
 
   CreateBooksIntegration:
     Type: AWS::ApiGatewayV2::Integration
