@@ -13,6 +13,10 @@ Code: [here](part1)
 
 To be added.
 
+Code: [here](part2)
+
+Details and explanations: [to be added]
+
 Follow me on Medium for more: [here](https://learnwithalex.medium.com)
 
 ## Lambda URL (simple-books-api/lambda-url) :santa:	
