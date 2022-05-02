@@ -4,7 +4,7 @@ Description: Simple Books API Gateway and Lambda functions
 Parameters:
   ApiName:
     Type: String
-    Default: simple-books-api
+    Default: simple-books-api-v2
   RetrieveBooksLambdaName:
     Type: String
     Default: retrieve-books
