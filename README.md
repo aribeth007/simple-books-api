@@ -11,11 +11,11 @@ Code: [here](part1)
 
 ## Part 2 (simple-books-api/part2)  :dove:	
 
-To be added.
+Contains an example with the API being created using AWS API Gateway V2 (HTTP APIs) and two AWS Lambda functions. Infrastructure is done using AWS Cloudformation.
+
+Details and explanations: [here](https://learnwithalex.medium.com/aws-learning-simple-api-using-api-gateway-and-lambda-with-cloudformation-part-2-2d02bdd94e59)
 
 Code: [here](part2)
-
-Details and explanations: [to be added]
 
 Follow me on Medium for more: [here](https://learnwithalex.medium.com)
 
