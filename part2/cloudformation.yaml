@@ -7,10 +7,10 @@ Parameters:
     Default: simple-books-api-v2
   RetrieveBooksLambdaName:
     Type: String
-    Default: retrieve-books
+    Default: retrieve-books-v2
   CreateBooksLambdaName:
     Type: String
-    Default: create-books
+    Default: create-books-v2
 
 Resources:
 
