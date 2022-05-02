@@ -90,7 +90,6 @@ Resources:
       Description: Books-Gateway-V2
       ProtocolType: HTTP
       CorsConfiguration:
-        AllowCredentials: true
         AllowHeaders:
           - Authorization
         AllowMethods:
