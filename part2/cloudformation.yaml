@@ -94,7 +94,9 @@ Resources:
         AllowHeaders:
           - Authorization
         AllowMethods:
-          - GET, POST, OPTIONS
+          - GET
+          - POST
+          - OPTIONS
         AllowOrigins:
           - '*'
 
